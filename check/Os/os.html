@@ -5,18 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Subject Navigation</title>
   <link rel="stylesheet" href="/check/css/cc.css">
-  
   <link rel="stylesheet" href="/styleScroll.css">
+  <style>
+    #main-content {
+      height: calc(100vh - 100px); /* Adjust this value as needed */
+      overflow-y: auto;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
   <!-- Include Navbar -->
 
-
   <!-- Subject Sidebar (Below Navbar) -->
   <nav class="subject-sidebar">
     <div class="subject-scroll">
-      <a href="/check/Dbms/dbms.html" class="subject-item">Math</a>
-      <a href="#" class="subject-item">Science</a>
+      <a href="/check/Dbms/dbms.html" class="subject-item">Dbms</a>
+      <a href="/check/Os/os.html" class="subject-item">Os</a>
+      <a href="/check/networking/networking.html" class="subject-item">Networking</a></a>
+      <a href="/" class="subject-item">Science</a>
       <a href="#" class="subject-item">English</a>
       <a href="#" class="subject-item">History</a>
       <a href="#" class="subject-item">Geography</a>
@@ -32,31 +39,21 @@
       <a href="#" class="subject-item">Chemistry</a>
       <a href="#" class="subject-item">Biology</a>
       <a href="#" class="subject-item">Math</a>
-      <a href="#" class="subject-item">Science</a>
-      <a href="#" class="subject-item">English</a>
-      <a href="#" class="subject-item">History</a>
-      <a href="#" class="subject-item">Geography</a>
-      <a href="#" class="subject-item">Physics</a>
-      <a href="#" class="subject-item">Chemistry</a>
-      <a href="#" class="subject-item">Biology</a>
       <!-- Add more items as needed -->
     </div>
   </nav>
-  
 
   <main class="content-container">
     <!-- Left Sidebar -->
     <aside class="sidebar">
       <h2>Topics</h2>
       <ul class="sidebar-menu">
-
-        <a href="/check/Dbms/page1" data-page="/check/Dbms/page1">Topic 1</a>
-
-        <li><a href="#" data-page="/check/Dbms/page1.html">Topic 2</a></li>
-        <li><a href="#" data-page="/check/Os/page1.html">Topic 3</a></li>
-        <li><a href="#" data-page="/check/networking/page1.html">Topic 4</a></li>
+        <li><a href="/check/Os/pages/page1.html" class="subject-item" data-topic-url="/check/Os/pages/page1.html">Topic 1</a></li>
+        <li><a href="/check/Os/pages/page2.html" class="subject-item" data-topic-url="/check/Os/pages/page2.html">Topic 2</a></li>
+        <li><a href="/check/Os/pages/page3.html" class="subject-item" data-topic-url="/check/Os/pages/page3.html">Topic 3</a></li>
+        <li><a href="/check/Os/pages/page4.html" class="subject-item" data-topic-url="/check/Os/pages/page4.html">Topic 4</a></li> 
       </ul>
-    </aside>
+    </aside>  
 
     <!-- Main Content -->
     <section id="main-content" class="main-content">
@@ -73,61 +70,44 @@
 
   <!-- Include Footer -->
 
-
   <!-- JavaScript for Dynamic Content Loading -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Handle subject sidebar navigation
-      const subjectLinks = document.querySelectorAll('.subject-menu a');
+      const topicLinks = document.querySelectorAll('.sidebar-menu a');
       const mainContent = document.getElementById('main-content');
 
-      subjectLinks.forEach(link => {
-        link.addEventListener('click', event => {
+      const loadContent = (url) => {
+        console.log(`Attempting to load content from: ${url}`);
+        fetch(`${url}?t=${new Date().getTime()}`) // Prevent cache
+          .then(response => {
+            if (!response.ok) {
+              console.error(`Failed to load: ${response.status} ${response.statusText}`);
+              throw new Error(`Error loading content from ${url}`);
+            }
+            return response.text();
+          })
+          .then(content => {
+            console.log(`Successfully loaded content from ${url}`);
+            mainContent.innerHTML = content;
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            mainContent.innerHTML = `<p>Error loading content. Please try again later.</p>`;
+          });
+      };
+
+      // Automatically load the first topic when the page loads
+      if (topicLinks.length > 0) {
+        const firstTopicUrl = topicLinks[0].getAttribute('href'); // Get URL of the first topic
+        loadContent(firstTopicUrl); // Load the first topic
+      }
+
+      topicLinks.forEach(link => {
+        console.log('Initializing click handler for:', link.href);
+        link.addEventListener('click', (event) => {
           event.preventDefault(); // Prevent default navigation
-          
-          // Get the URL of the subject page from the `data-page` attribute
-          const subjectUrl = link.getAttribute('data-page');
-
-          // Fetch the page content using AJAX
-          fetch(subjectUrl)
-            .then(response => {
-              if (!response.ok) throw new Error('Network error');
-              return response.text();
-            })
-            .then(content => {
-              // Replace the main content section with the fetched content
-              mainContent.innerHTML = content;
-            })
-            .catch(error => {
-              mainContent.innerHTML = `<p>Error loading content. Please try again later.</p>`;
-              console.error('Error loading content:', error);
-            });
-        });
-      });
-
-      // Handle topic sidebar navigation (already implemented in your code)
-      const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-      sidebarLinks.forEach(link => {
-        link.addEventListener('click', event => {
-          event.preventDefault(); // Prevent default navigation
-
-          // Get the URL of the page to load from the `data-page` attribute
-          const pageUrl = link.getAttribute('data-page');
-
-          // Fetch the page content using AJAX
-          fetch(pageUrl)
-            .then(response => {
-              if (!response.ok) throw new Error('Network error');
-              return response.text();
-            })
-            .then(content => {
-              // Replace the main content section with the fetched content
-              mainContent.innerHTML = content;
-            })
-            .catch(error => {
-              mainContent.innerHTML = `<p>Error loading content. Please try again later.</p>`;
-              console.error('Error loading content:', error);
-            });
+          const topicUrl = link.getAttribute('href');
+          loadContent(topicUrl);
         });
       });
     });
